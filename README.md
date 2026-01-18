@@ -7,16 +7,17 @@ Cette baseline servira de point de comparaison pour mesurer l’impact des optim
 
 ### Commandes exécutées
 
-1.docker build -t tp:baseline 
+- docker build -t tp:baseline 
 Construction de l’image Docker initiale
 
-2.docker images tp:baseline 
-Vérification de la taille de l’image 
+- docker images tp:baseline 
+Vérification de la taille de l’image
+**Taille actuelle: 1.73GB**
 
-3.docker history tp:baseline
+- docker history tp:baseline
 Analyse des différentes couches de l’image 
 
-4.docker run --rm -p 3000:3000 --name tp-baseline tp:baseline
+- docker run --rm -p 3000:3000 --name tp-baseline tp:baseline
 Exécution du conteneur
 -> http://localhost:3000
 
@@ -25,5 +26,19 @@ Exécution du conteneur
 Cette étape introduit un fichier `.dockerignore` afin de réduire le build context et exclure les fichiers inutiles, notamment `node_modules`.
 
 Après l’ajout de `.dockerignore`, la construction de l’image met en évidence un problème dans le Dockerfile existant (copie de `node_modules` depuis la machine hôte), ce qui conduit logiquement à l’étape suivante de correction du Dockerfile.
+
+## Étape 3 — Correction du Dockerfile
+
+Cette étape vise à corriger le Dockerfile après l’introduction du fichier `.dockerignore`. La copie du dossier `node_modules` depuis la machine hôte a été supprimée, car elle est incompatible avec `.dockerignore` et ne constitue pas une bonne pratique.  
+Les dépendances sont désormais installées directement dans l’image Docker.
+
+Le Dockerfile a également été réorganisé afin d’améliorer l’utilisation du cache Docker, en copiant les fichiers `package*.json` avant l’installation des dépendances, puis le reste du code source.
+
+Commandes exécutées :
+- docker build -t tp:etape3 .
+- docker images tp:etape3
+**Taille actuelle: 1.69GB**
+- docker history tp:etape3
+- docker run --rm -p 3001:3000 tp:etape3
 
 
