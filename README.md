@@ -20,3 +20,10 @@ Analyse des différentes couches de l’image
 Exécution du conteneur
 -> http://localhost:3000
 
+## Étape 2 — Ajout du fichier .dockerignore
+
+Cette étape introduit un fichier `.dockerignore` afin de réduire le build context et exclure les fichiers inutiles, notamment `node_modules`.
+
+Après l’ajout de `.dockerignore`, la construction de l’image met en évidence un problème dans le Dockerfile existant (copie de `node_modules` depuis la machine hôte), ce qui conduit logiquement à l’étape suivante de correction du Dockerfile.
+
+
