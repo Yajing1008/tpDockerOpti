@@ -1,27 +1,36 @@
-FROM node:latest
-
+# =========================
+# Stage 1: builder
+# =========================
+FROM node:latest AS builder
 WORKDIR /app
 
-# (1) Installer les dépendances système AVANT npm install
+# System dependencies required for native npm modules
 RUN apt-get update \
- && apt-get install -y --no-install-recommends build-essential ca-certificates locales \
- && echo "en_US.UTF-8 UTF-8" > /etc/locale.gen \
- && locale-gen \
+ && apt-get install -y --no-install-recommends build-essential ca-certificates \
  && rm -rf /var/lib/apt/lists/*
 
-# (2) Copier uniquement les fichiers de dépendances pour profiter du cache Docker
+# Install all dependencies (including dev)
 COPY package*.json ./
-
-# (3) Installer les dépendances
 RUN npm install
 
-# (4) Copier le reste du projet
-COPY . .
+# Copy application source
+COPY server.js ./server.js
 
-EXPOSE 3000 4000 5000
-ENV NODE_ENV=development
 
-# (5) Build (si nécessaire pour ton projet)
-RUN npm run build
+# =========================
+# Stage 2: runtime
+# =========================
+FROM node:latest AS runtime
+WORKDIR /app
 
+ENV NODE_ENV=production
+
+# Install only production dependencies
+COPY package*.json ./
+RUN npm install --omit=dev
+
+# Copy application code from builder
+COPY --from=builder /app/server.js ./server.js
+
+EXPOSE 3000
 CMD ["node", "server.js"]

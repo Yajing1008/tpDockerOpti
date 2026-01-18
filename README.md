@@ -1,8 +1,8 @@
 # tpDockerOpti
 
-## Etape 0 — Baseline (image initiale sans modification)
+## Etape 1 — Baseline (image initiale sans modification)
 
-L’objectif de cette première étape est de construire et exécuter l’image Docker **sans aucune optimisation**, afin d’obtenir une référence (baseline).  
+L’objectif de cette première étape est de construire et exécuter l’image Docker sans aucune optimisation, afin d’obtenir une référence (baseline).  
 Cette baseline servira de point de comparaison pour mesurer l’impact des optimisations réalisées dans les étapes suivantes.Aucun fichier n’a été modifié à cette étape.
 
 ### Commandes exécutées
@@ -27,18 +27,25 @@ Cette étape introduit un fichier `.dockerignore` afin de réduire le build cont
 
 Après l’ajout de `.dockerignore`, la construction de l’image met en évidence un problème dans le Dockerfile existant (copie de `node_modules` depuis la machine hôte), ce qui conduit logiquement à l’étape suivante de correction du Dockerfile.
 
-## Étape 3 — Correction du Dockerfile
+## Étape 3 — Modification du Dockerfile (Suivi l'étape 2)
 
 Cette étape vise à corriger le Dockerfile après l’introduction du fichier `.dockerignore`. La copie du dossier `node_modules` depuis la machine hôte a été supprimée, car elle est incompatible avec `.dockerignore` et ne constitue pas une bonne pratique.  
 Les dépendances sont désormais installées directement dans l’image Docker.
 
 Le Dockerfile a également été réorganisé afin d’améliorer l’utilisation du cache Docker, en copiant les fichiers `package*.json` avant l’installation des dépendances, puis le reste du code source.
 
-Commandes exécutées :
-- docker build -t tp:etape3 .
-- docker images tp:etape3
 **Taille actuelle: 1.69GB**
-- docker history tp:etape3
-- docker run --rm -p 3001:3000 tp:etape3
+
+## Étape 4 — Multi-stage build
+
+Mise en place d’un Dockerfile multi-stage afin de séparer l’installation des outils de build et des dépendances complètes de l’image finale d’exécution.
+
+Le stage `builder` contient les outils de compilation nécessaires à l’installation de certains modules npm, tandis que le stage `runtime` n’embarque que les dépendances de production et le fichier `server.js`.
+
+**Taille actuelle: 1.65GB**
+
+La réduction reste modérée en raison de la simplicité du projet (serveur Node.js sans artefacts de build volumineux).  
+Néanmoins, l’approche multi-stage améliore clairement la structure de l’image en séparant les dépendances de build et l’environnement d’exécution, ce qui constitue une bonne pratique recommandée pour les applications Dockerisées.
+
 
 
